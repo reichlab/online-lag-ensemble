@@ -55,8 +55,8 @@ based only on the first estimate).
 \[ \hat{L}_i - T \sum_{j=1}^{k} \theta_i(j) \le L_i \le \hat{L}_i + T
 \sum_{j=1}^{k} \theta_i(j) \]
 
-\[ \hat{L}_H - T \max_{i' \in [1\ldots n]} \sum_{j=1}^{k} \theta_{i'}(j) \le L_i
-\le \hat{L}_i + T \max_{i' \in [1\ldots n]} \sum_{j=1}^{k} \theta_{i'}(j) \]
+\[ \hat{L}_H - T \max_{i' \in [1\ldots n]} \sum_{j=1}^{k} \theta_{i'}(j) \le L_H
+\le \hat{L}_H + T \max_{i' \in [1\ldots n]} \sum_{j=1}^{k} \theta_{i'}(j) \]
 
 ** Regular hedging bound
 If we do regular hedging and have the real time series in hand, then the bound
