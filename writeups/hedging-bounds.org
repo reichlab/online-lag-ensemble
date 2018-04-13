@@ -20,8 +20,9 @@ released at the next few time steps. In this setting, there are two losses for a
 model at each time step. One, $\hat{m}$, tells us how the model does with
 respect to the first estimate of truth and second, $m$, is the model loss with
 respect to the /final truth/. Our aim here is to bound the final truth loss of
-the ensemble in terms of the final truth loss of the components and try to find
-ways to improve on that.
+the ensemble in terms of the final truth loss of the components to get hannan
+consistency[fn::When time goes to $\infty$, we get a regret of 0] and try to
+find ways to improve on that.
 
 * TODO Problem setting
 
@@ -111,6 +112,31 @@ There are a few things to note regarding the component models:
 - The model which is bad with lags (resulting in the $\max$ term) and is not the
   best one considering its $L_i$ can be removed without any theoretical loss in
   performance.
+
+** Usefulness of the bounds
+Although, in general these can be useful, the bounds presented are of type that
+depend on the loss of the best component model. Which can actually be worse than
+a direct bound if this loss is really bad.
+
+In our situation, we use $(1 - p)$ as the loss where $p$ is the probability
+assigned to the true bin by the model. The component models in the influenza
+setting turn out to be pretty bad considering with respect to the absolute value
+of this loss. Consider the following table which shows the mean values of $p$
+for US National (2016-2017) (lab models only):
+
+| Model    |     1 |     2 |     3 |     4 | Onset |  Peak | Peak Week |
+|----------+-------+-------+-------+-------+-------+-------+-----------|
+| Ensemble | 0.088 | 0.062 | 0.048 | 0.046 | 0.736 |  0.01 |     0.438 |
+| KCDE     | 0.081 |  0.06 | 0.044 | 0.043 | 0.761 | 0.006 |     0.434 |
+| KDE      |  0.04 | 0.041 | 0.041 | 0.042 | 0.262 | *0.014* |     0.316 |
+| SARIMA   | *0.096* | *0.073* | *0.059* | *0.053* |  *0.82* |  0.01 |     *0.463* |
+
+This renders the $L^{\star}$ type bound to be pretty loose. The regular bound is
+better but a good way is to run experiments to see how tight that is going to
+be.
+
+This also asks to reconsider which loss function to base the scoring decision
+on.
 
 ** Hedging by preempting the estimate
 
