@@ -1,0 +1,60 @@
+#+TITLE: Online Ensembles with Lag
+#+AUTHOR: Abhinav Tushar
+
+In this repository we explore ways to cope with /lags/ while assigning dynamic
+weights to a set of components.
+
+*** Table of Contents                                   :TOC_4_gh:noexport:
+- [[#problem][Problem]]
+- [[#data-description][Data description]]
+- [[#models][Models]]
+- [[#evaluation][Evaluation]]
+
+* Problem
+In a general setting of prediction with expert advice at each time point t, we
+get the truth for the last t - 1 points. The problem we have here is that the
+truth provided at time t is not final and might change in the future.
+Specifically, at time t we receive what we call /lag 0/ value of truth for time t.
+In the next time step (t + 1), we receive /lag 0/ value of time t + 1 and /lag 1/
+value for time t. These progress updates tend to settle the truth after some
+fixed amount of lags.
+
+In such situations, loss calculated for a component model at time t might not be
+the true representative of the /final loss/ that model suffers. This changes the
+aim of an online ensemble to provide best regret with respect to the final loss
+and not just the lag 0 loss.
+
+Note that this is different than the usual /partial monitoring/ problem since we
+mostly have better understanding of the effect of lags.
+
+In this repository, we work on techniques to counter the effect of such lags.
+
+* Data description
+We follow the same conventions as in the [[https://github.com/reichlab/tracking-ensemble#data-description][tracking-ensemble]] repository. A
+difference is in the way we handle truth. Since this repository is concerned
+with handling lags, we use all the available lag values instead of just
+depending on the latest one.
+
+* Models
+The models we use are all dynamic weight based ensembles (we will also put in
+some static baseline models for comparison). As of now, there are the following
+two general pieces that form an /ensembling strategy/:
+
+1. Handling the uncertainty in truth due to lag. This might involve some form of
+   imputation.
+2. Updating the weights based on the component losses or any other factor.
+
+The main development package for both these components is [[https://github.com/reichlab/ledge][ledge]] and so lists of
+approaches for both can be peeked from there.
+
+* Evaluation
+Theoretically, we would like to have the ensembling strategy provide good regret
+bounds irrespective of lag. In practice, a very general purpose bound might not
+be really meaningful since the data we work with has around 33 time points per
+season (and a few other factors).
+
+In this repository, we try to experiment both ways to understand the nature of
+the specific problem we have with our set of components and loss functions.
+
+See ~./writeups~ for some documentation and bounds. ~./notebooks~ contains the
+actual work involving data.

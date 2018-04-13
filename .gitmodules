@@ -1,0 +1,3 @@
+[submodule "data/external/cdc-flusight-ensemble"]
+	path = data/external/cdc-flusight-ensemble
+	url = https://github.com/FluSightNetwork/cdc-flusight-ensemble
