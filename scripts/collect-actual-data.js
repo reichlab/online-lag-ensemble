@@ -45,13 +45,14 @@ function mergeTruths (truths) {
  * Get truth for all the seasons
  */
 async function getTruth (seasons) {
-  let firstTruths = await Promise.all(seasons.map(s => fct.truth.getSeasonTruth(s, 0)))
-  let latestTruths = await Promise.all(seasons.map(s => fct.truth.getSeasonTruth(s)))
+  let lags = u.arange(0, 30) // Only go for 30 lags
+  let truths = await Promise.all(lags.map(async (lag) => {
+    return {
+      lag, seasonValues: await Promise.all(seasons.map(s => fct.truth.getSeasonTruth(s, lag)))
+    }
+  }))
 
-  return {
-    firstTruth: mergeTruths(firstTruths),
-    latestTruth: mergeTruths(latestTruths)
-  }
+  return truths
 }
 
 /**
@@ -62,22 +63,26 @@ async function writeCsv (indexFile, outputFile) {
   let headers = [
     'epiweek',
     'region',
-    ...(fct.meta.targetIds.map(t => `${t}-first`)),
-    ...(fct.meta.targetIds.map(t => `${t}-latest`))
+    'lag',
+    ...fct.meta.targetIds,
   ]
   stream.write(`${headers.join(',')}\n`)
 
   let indexData = await parseIndex(indexFile)
   let seasons = getSeasons(indexData.map(d => d.epiweek))
-  let { firstTruth, latestTruth } = await getTruth(seasons)
+  let truths = await getTruth(seasons)
 
   for (let { epiweek, region } of indexData) {
-    let epiweekFirstTruth = firstTruth[region].find(d => d.epiweek === epiweek)
-    let epiweekLatestTruth = latestTruth[region].find(d => d.epiweek === epiweek)
-    let firstValues = fct.meta.targetIds.map(t => epiweekFirstTruth[t] || NaN)
-    let latestValues = fct.meta.targetIds.map(t => epiweekLatestTruth[t] || NaN)
-
-    stream.write(`${epiweek},${region},${firstValues.join(',')},${latestValues.join(',')}\n`)
+    for (let { lag, seasonValues } of truths) {
+      let epiweekTruth
+      for (let values of seasonValues) {
+        epiweekTruth = values[region].find(d => d.epiweek === epiweek)
+        if (epiweekTruth) {
+          break
+        }
+      }
+      stream.write(`${epiweek},${region},${lag},${fct.meta.targetIds.map(t => epiweekTruth[t] || NaN).join(',')}\n`)
+    }
   }
 }
 
