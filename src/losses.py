@@ -4,7 +4,7 @@ Loss calculation
 
 import xarray as xr
 from ledge.datatypes import Truth, Loss, Prediction
-from utils.dists import prediction_probabilities
+from utils.dists import probabilities
 
 
 def _attrs_check(pred: Prediction, truth: Truth):
@@ -18,7 +18,10 @@ def ploss(pred: Prediction, truth: Truth) -> Loss:
     """
 
     _attrs_check(pred, truth)
-    raise NotImplementedError()
+    loss = 1 - probabilities(pred, truth)
+    # Reattach metadata
+    loss.attrs = { **pred.attrs, **truth.attrs }
+    return loss
 
 
 def logloss(pred: Prediction, truth: Truth) -> Loss:
