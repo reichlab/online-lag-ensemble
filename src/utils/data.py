@@ -77,7 +77,7 @@ class Component:
         # Convert to pymmwr type
         epiweeks = [pymmwr.Epiweek(year=ew // 100, week=ew % 100) for ew in index["epiweek"]]
 
-        meta = { "model": self.name, "region": region_name }
+        meta = { "model": self.name, "region": region_name, "target": target_name }
         return xr.DataArray(data, dims=("epiweek", "bins"), coords={ "epiweek": epiweeks }, attrs=meta)
 
 
@@ -119,7 +119,7 @@ class ActualData:
         # Convert to pymmwr type
         epiweeks = [pymmwr.Epiweek(year=ew // 100, week=ew % 100) for ew in index["epiweek"]]
 
-        meta = { "lag": lag, "region": region_name }
+        meta = { "lag": lag, "region": region_name, "target": target_name }
         return xr.DataArray(data, dims="epiweek", coords={ "epiweek": epiweeks }, attrs=meta)
 
 
