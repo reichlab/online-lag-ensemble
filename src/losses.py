@@ -2,7 +2,7 @@
 Loss calculation
 """
 
-import xarray as xr
+import numpy as np
 from ledge.datatypes import Truth, Loss, Prediction
 from utils.dists import probabilities
 
@@ -30,7 +30,9 @@ def logloss(pred: Prediction, truth: Truth) -> Loss:
     """
 
     _attrs_check(pred, truth)
-    raise NotImplementedError()
+    loss = -np.log(probabilities(pred, truth))
+    loss.attrs = { **pred.attrs, **truth.attrs }
+    return loss
 
 
 def absloss(pred: Prediction, truth: Truth) -> Loss:
