@@ -13,9 +13,11 @@ from typing import List, Tuple
 from utils.misc import epiweek_to_model_week
 
 
+# Types
 Index = pd.DataFrame
 Data = np.ndarray
 Prediction = xr.DataArray
+Truth = xr.DataArray
 
 
 def _narrow_selection(index: Index, data: Data, region_name: str, season: int) -> Tuple[Index, Data]:
@@ -72,7 +74,7 @@ class Component:
         data = np.loadtxt(path.join(self.model_path, target_name))
         index, data = _narrow_selection(self.index, data, region_name, season)
 
-        # Conver to pymmwr type
+        # Convert to pymmwr type
         epiweeks = [pymmwr.Epiweek(year=ew // 100, week=ew % 100) for ew in index["epiweek"]]
 
         meta = { "model": self.name, "region": region_name }
@@ -88,7 +90,7 @@ class ActualData:
         self.exp_dir = exp_dir
         self._df = pd.read_csv(path.join(exp_dir, "actual.csv"))
 
-    def get(self, target_name: str, region_name: str, season: int, lag: int) -> Tuple[Index, Data]:
+    def get(self, target_name: str, region_name: str, season: int, lag: int) -> Truth:
         """
         Return index and data for given region.
 
@@ -104,14 +106,21 @@ class ActualData:
             Lag to return
         """
 
-        index = self._df[["epiweek", "region"]]
-        data = self._df[target_column].values
+        lag_df = self._df[self._df["lag"] == lag]
+        index = lag_df[["epiweek", "region"]]
+        data = lag_df[target_name].values
 
         if target_name in ["peak-wk", "onset-wk"]:
             # We use a general model week specification
             data = np.array([epiweek_to_model_week(ew) for ew in data])
 
-        return _narrow_selection(index, data, region_name, season)
+        index, data = _narrow_selection(index, data, region_name, season)
+
+        # Convert to pymmwr type
+        epiweeks = [pymmwr.Epiweek(year=ew // 100, week=ew % 100) for ew in index["epiweek"]]
+
+        meta = { "lag": lag, "region": region_name }
+        return xr.DataArray(data, dims="epiweek", coords={ "epiweek": epiweeks }, attrs=meta)
 
 
 def available_models(exp_dir: str) -> List[str]:
@@ -124,19 +133,3 @@ def available_models(exp_dir: str) -> List[str]:
         os.listdir(exp_dir)
         if path.isdir(path.join(exp_dir, model))
     ])
-
-
-def get_seasons_data(ad: ActualData, cmps: List[Component], seasons: List[int], target: str, region: str, latest=True) -> Tuple[Index, List[Data], Data]:
-    """
-    Return a tuple of yi, Xs and y for the givens seasons, concatenated.
-    """
-
-    ypairs = [ad.get(target, region_name=region, season=s, latest=latest) for s in seasons]
-    yi = pd.concat([yp[0] for yp in ypairs], ignore_index=True)
-    Xs = [
-        np.concatenate([c.get(target, region_name=region, season=s)[1] for s in seasons])
-        for c in cmps
-    ]
-    y = np.concatenate([yp[1] for yp in ypairs])
-
-    return yi, Xs, y
