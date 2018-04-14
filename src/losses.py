@@ -7,6 +7,9 @@ from ledge.datatypes import Truth, Loss, Prediction
 from utils.dists import probabilities
 
 
+EPSILON = np.sqrt(np.finfo(float).eps)
+
+
 def _attrs_check(pred: Prediction, truth: Truth):
     if any(pred.attrs[f] != truth.attrs[f] for f in ["target", "region"]):
         raise Exception("Attributes don't match for prediction and truth")
@@ -30,7 +33,7 @@ def logloss(pred: Prediction, truth: Truth) -> Loss:
     """
 
     _attrs_check(pred, truth)
-    loss = -np.log(probabilities(pred, truth))
+    loss = -np.log(probabilities(pred, truth) + EPSILON)
     loss.attrs = { **pred.attrs, **truth.attrs }
     return loss
 
