@@ -4,7 +4,8 @@ Utilities for working with distributions
 
 import numpy as np
 import xarray as xr
-from ledge.datatypes import Truth, Prediction
+from ledge.datatypes import Truth, Prediction, Weight
+from ledge.utils import uniform_weights
 from typing import List
 
 
@@ -36,20 +37,21 @@ def actual_to_one_hot(vector: np.ndarray, target: str) -> np.ndarray:
     return y
 
 
-def weighted_ensemble(dists: List[np.ndarray], weights: np.ndarray) -> np.ndarray:
-    """
-    Return weighted ensemble
-    """
+def weighted_prediction(preds: List[Prediction], weights: Weight) -> Prediction:
+    merged = xr.merge([p.rename(p.attrs["model"]) for p in preds], join="left")
+    merged = merged.to_array().rename({ "variable": "model" })
+    merged = merged.dot(weights)
 
-    return np.sum([d * w for d, w in zip(dists, weights)], axis=0)
+    # Reattach metadata
+    for key in ["target", "region"]:
+        if key in preds[0].attrs:
+            merged.attrs[key] = preds[0].attrs[key]
+    return merged
 
 
-def mean_ensemble(dists: List[np.ndarray]) -> np.ndarray:
-    """
-    Return mean of dists. Works as mean ensemble model.
-    """
-
-    return weighted_ensemble(dists, np.ones(len(dists)) / len(dists))
+def mean_prediction(preds: List[Prediction]) -> Prediction:
+    models = [pred.attrs["model"] for pred in preds]
+    return weighted_prediction(preds, uniform_weights(models, ones=False))
 
 
 def probabilities(pred: Prediction, truth: Truth) -> xr.DataArray:
