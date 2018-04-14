@@ -8,6 +8,7 @@ import xarray as xr
 import os
 import os.path as path
 import pymmwr
+from ledge.datatypes import Truth, Prediction
 from functools import lru_cache
 from typing import List, Tuple
 from utils.misc import epiweek_to_model_week
@@ -16,8 +17,6 @@ from utils.misc import epiweek_to_model_week
 # Types
 Index = pd.DataFrame
 Data = np.ndarray
-Prediction = xr.DataArray
-Truth = xr.DataArray
 
 
 def _narrow_selection(index: Index, data: Data, region_name: str, season: int) -> Tuple[Index, Data]:

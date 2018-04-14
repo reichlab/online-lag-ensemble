@@ -3,6 +3,8 @@ Utilities for working with distributions
 """
 
 import numpy as np
+import xarray as xr
+from ledge.datatypes import Truth, Prediction
 from typing import List
 
 
@@ -50,9 +52,9 @@ def mean_ensemble(dists: List[np.ndarray]) -> np.ndarray:
     return weighted_ensemble(dists, np.ones(len(dists)) / len(dists))
 
 
-def prediction_probabilities(Xs: List[np.ndarray], y: np.ndarray, target: str) -> np.ndarray:
+def probabilities(pred: Prediction, truth: Truth) -> xr.DataArray:
     """
-    Return score matrix for the predictions
+    Return probabilities for the prediction
     """
 
     return np.stack([np.multiply(actual_to_one_hot(y, target), X).sum(axis=1) for X in Xs], axis=1)

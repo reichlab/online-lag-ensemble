@@ -3,12 +3,8 @@ Loss calculation
 """
 
 import xarray as xr
-
-
-# Types
-Loss = xr.DataArray
-Truth = xr.DataArray
-Prediction = xr.DataArray
+from ledge.datatypes import Truth, Loss, Prediction
+from utils.dists import prediction_probabilities
 
 
 def _attrs_check(pred: Prediction, truth: Truth):
