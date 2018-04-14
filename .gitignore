@@ -111,3 +111,4 @@ venv.bak/
 *.tex
 *.bbl
 /writeups/auto
+/notebooks/scratch.ipynb
