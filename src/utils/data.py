@@ -26,28 +26,19 @@ def _narrow_selection(index: Index, data: Data, region_name: str, season: int) -
 
     # All true selection
     selection = index["epiweek"] > 0
-    narrowing = False
-    if region_name is not None:
-        selection = selection & (index["region"] == region_name)
-        narrowing = True
+    selection = selection & (index["region"] == region_name)
+    first_ew = (season * 100) + 40
 
-    if season is not None:
-        first_ew = (season * 100) + 40
-
-        if pymmwr.epiweeks_in_year(season) == 53:
-            # We skip the 20yy20 data and only provide upto 20yy19
-            # This makes it easy for the visualizations
-            last_ew = ((season + 1) * 100) + 19
-        else:
-            last_ew = ((season + 1) * 100) + 20
-
-        selection = selection & (index["epiweek"] >= first_ew) & (index["epiweek"] <= last_ew)
-        narrowing = True
-
-    if narrowing:
-        return index[selection].reset_index(drop=True), data[selection]
+    if pymmwr.epiweeks_in_year(season) == 53:
+        # We skip the 20yy20 data and only provide upto 20yy19
+        # This makes it easy for the visualizations
+        last_ew = ((season + 1) * 100) + 19
     else:
-        return index, data
+        last_ew = ((season + 1) * 100) + 20
+
+    selection = selection & (index["epiweek"] >= first_ew) & (index["epiweek"] <= last_ew)
+
+    return index[selection].reset_index(drop=True), data[selection]
 
 
 class Component:
@@ -62,7 +53,7 @@ class Component:
         self.index = pd.read_csv(path.join(exp_dir, "index.csv"))
 
     @lru_cache(None)
-    def get(self, target_name: str, region_name=None, season=None) -> Tuple[Index, Data]:
+    def get(self, target_name: str, region_name: str, season: int) -> Tuple[Index, Data]:
         """
         Return data for asked target_name along with index
 
@@ -70,10 +61,10 @@ class Component:
         ----------
         target_name : str
             Identifier for the target to load
-        region_name : str | None
-            Short region code (nat, hhs2 ...) or None for all regions
-        season : int | None
-            Season, as identified by its first year, or None for all seasons
+        region_name : str
+            Short region code (nat, hhs2 ...)
+        season : int
+            Season, as identified by its first year
         """
 
         data = np.loadtxt(path.join(self.model_path, target_name))
@@ -89,7 +80,7 @@ class ActualData:
         self.exp_dir = exp_dir
         self._df = pd.read_csv(path.join(exp_dir, "actual.csv"))
 
-    def get(self, target_name: str, region_name=None, season=None, latest=True) -> Tuple[Index, Data]:
+    def get(self, target_name: str, region_name: str, season: int, lag: int) -> Tuple[Index, Data]:
         """
         Return index and data for given region.
 
@@ -97,15 +88,14 @@ class ActualData:
         ----------
         target_name : str
             Identifier for the target to provide
-        region_name : str | None
-            Short region code (nat, hhs2 ...) or None for all regions
-        season : int | None
-            Season, as identified by its first year, or None for all seasons
-        latest : bool
-            Whether to return the latest truth or the first available one
+        region_name : str
+            Short region code (nat, hhs2 ...)
+        season : int
+            Season, as identified by its first year
+        lag : int
+            Lag to return
         """
 
-        target_column = f"{target_name}-{'latest' if latest else 'first'}"
         index = self._df[["epiweek", "region"]]
         data = self._df[target_column].values
 
