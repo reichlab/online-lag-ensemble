@@ -1,7 +1,7 @@
 {
-  "name": "tracking-ensemble",
+  "name": "online-lag-ensemble",
   "version": "1.0.0",
-  "description": "node dependencies for tracking-ensemble project",
+  "description": "node dependencies for online-lag-ensemble project",
   "main": "index.js",
   "dependencies": {
     "flusight-csv-tools": "^0.1.5",
