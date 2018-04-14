@@ -31,7 +31,7 @@ def epiweek_to_model_week(epiweek: int) -> int:
 
     epiweek = int(epiweek)
     season = epiweek_to_season(epiweek)
-    nweeks = pymmwr.mmwr_weeks_in_year(season)
+    nweeks = pymmwr.epiweeks_in_year(season)
 
     week = epiweek % 100
     if week >= 40 and week <= nweeks:

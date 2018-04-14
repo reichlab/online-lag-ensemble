@@ -34,7 +34,7 @@ def _narrow_selection(index: Index, data: Data, region_name: str, season: int) -
     if season is not None:
         first_ew = (season * 100) + 40
 
-        if pymmwr.mmwr_weeks_in_year(season) == 53:
+        if pymmwr.epiweeks_in_year(season) == 53:
             # We skip the 20yy20 data and only provide upto 20yy19
             # This makes it easy for the visualizations
             last_ew = ((season + 1) * 100) + 19
