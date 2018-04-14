@@ -4,6 +4,7 @@ Helper module for working with data
 
 import numpy as np
 import pandas as pd
+import xarray as xr
 import os
 import os.path as path
 import pymmwr
@@ -14,6 +15,7 @@ from utils.misc import epiweek_to_model_week
 
 Index = pd.DataFrame
 Data = np.ndarray
+Prediction = xr.DataArray
 
 
 def _narrow_selection(index: Index, data: Data, region_name: str, season: int) -> Tuple[Index, Data]:
@@ -53,7 +55,7 @@ class Component:
         self.index = pd.read_csv(path.join(exp_dir, "index.csv"))
 
     @lru_cache(None)
-    def get(self, target_name: str, region_name: str, season: int) -> Tuple[Index, Data]:
+    def get(self, target_name: str, region_name: str, season: int) -> Prediction:
         """
         Return data for asked target_name along with index
 
@@ -68,7 +70,13 @@ class Component:
         """
 
         data = np.loadtxt(path.join(self.model_path, target_name))
-        return _narrow_selection(self.index, data, region_name, season)
+        index, data = _narrow_selection(self.index, data, region_name, season)
+
+        # Conver to pymmwr type
+        epiweeks = [pymmwr.Epiweek(year=ew // 100, week=ew % 100) for ew in index["epiweek"]]
+
+        meta = { "model": self.name, "region": region_name }
+        return xr.DataArray(data, dims=("epiweek", "bins"), coords={ "epiweek": epiweeks }, attrs=meta)
 
 
 class ActualData:
