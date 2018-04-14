@@ -38,6 +38,9 @@ def actual_to_one_hot(vector: np.ndarray, target: str) -> np.ndarray:
 
 
 def weighted_prediction(preds: List[Prediction], weights: Weight) -> Prediction:
+    if weights is None:
+        weights = uniform_weights([pred.attrs["model"] for pred in preds], ones=False)
+
     merged = xr.merge([p.rename(p.attrs["model"]) for p in preds], join="left")
     merged = merged.to_array().rename({ "variable": "model" })
     merged = merged.dot(weights)
@@ -47,11 +50,6 @@ def weighted_prediction(preds: List[Prediction], weights: Weight) -> Prediction:
         if key in preds[0].attrs:
             merged.attrs[key] = preds[0].attrs[key]
     return merged
-
-
-def mean_prediction(preds: List[Prediction]) -> Prediction:
-    models = [pred.attrs["model"] for pred in preds]
-    return weighted_prediction(preds, uniform_weights(models, ones=False))
 
 
 def probabilities(pred: Prediction, truth: Truth) -> xr.DataArray:
