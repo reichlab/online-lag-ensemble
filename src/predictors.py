@@ -24,7 +24,7 @@ def _predictor(truths: List[Truth],
             truth = merging_fn(mask_truths(truths, ew))
             losses = [loss_fn(pred.loc[:(ew - 1)], truth) for pred in preds]
             weights = update_fn(losses, init_weights=init_weights)
-            weights /= weights.sum()
+            weights = weights / weights.sum()
 
         output.append(weighted_prediction([pred.loc[ew] for pred in preds], weights))
 
