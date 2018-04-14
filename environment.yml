@@ -114,5 +114,6 @@ dependencies:
     - typed-ast==1.1.0
     - urllib3==1.22
     - wrapt==1.10.11
+    - xarray==0.10.3
 prefix: /home/lepisma/.miniconda/envs/online-lag-ensemble
 
