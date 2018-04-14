@@ -57,4 +57,4 @@ def probabilities(pred: Prediction, truth: Truth) -> xr.DataArray:
     Return probabilities for the prediction
     """
 
-    return np.stack([np.multiply(actual_to_one_hot(y, target), X).sum(axis=1) for X in Xs], axis=1)
+    return np.multiply(actual_to_one_hot(truth, pred.attrs["target"]), pred).sum(axis=1)
