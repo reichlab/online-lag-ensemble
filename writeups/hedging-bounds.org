@@ -24,7 +24,28 @@ the ensemble in terms of the final truth loss of the components to get hannan
 consistency[fn::When time goes to $\infty$, we get a regret of 0] and try to
 find ways to improve on that.
 
-* TODO Problem setting
+* Problem setting
+
+The flu forecasting task that we look at in this work has two differences from
+the regular /online/ time series forecasting problem:
+
+1. The prediction at each time point is a discrete probability distribution and
+   not just a point.
+2. The truth that the model is allowed to glean at is updated as the time goes
+   on.
+
+Because of the second point, a model will have a spectrum of losses depending on
+how /true/ the truth is. Adding the first condition, we get a relationship among
+the losses in the spectrum since the distribution should sum to one.
+
+Any real time model is going to work with the /latest/ truth available to it but
+will be evaluated based on how it does on the /final/ truth. If the probability
+distributions have some continuity properties, we might figure out how much
+worse a model would be in the final evaluation given its live evaluation. To
+abstract this gradation of probability around a bin, we define a variable which
+just tells how different the final loss can be, given the live loss. In what
+follows, we formalize this variable and see how to use past data to get an
+estimate for the same.
 
 * Bounds
 
