@@ -5,7 +5,6 @@ Utilities for working with distributions
 import numpy as np
 import xarray as xr
 from ledge.datatypes import Truth, Prediction, Weight
-from ledge.utils import uniform_weights
 from typing import List
 
 
@@ -38,9 +37,6 @@ def actual_to_one_hot(vector: np.ndarray, target: str) -> np.ndarray:
 
 
 def weighted_prediction(preds: List[Prediction], weights: Weight) -> Prediction:
-    if weights is None:
-        weights = uniform_weights([pred.attrs["model"] for pred in preds], ones=False)
-
     merged = xr.merge([p.rename(p.attrs["model"]) for p in preds], join="left")
     merged = merged.to_array().rename({ "variable": "model" })
     merged = merged.dot(weights)
