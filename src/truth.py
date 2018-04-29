@@ -4,6 +4,7 @@ import ledge.fill as fill
 from pymmwr import Epiweek
 from typing import List, Dict
 from functools import partial
+from hyperopt import hp
 
 
 def mask_truths(truths: List[Truth], ew: Epiweek) -> List[Truth]:
@@ -21,34 +22,34 @@ def mask_truths(truths: List[Truth], ew: Epiweek) -> List[Truth]:
     return masked
 
 
+FILL_SPACE = hp.choice("imputation_type", [
+    { "type": None },
+    {
+        "type": "diff",
+        "lookback": 1 + hp.randint("lookback", 33),
+        "normalize": hp.choice("normalize", [True, False]),
+        "window": hp.choice("window", [
+            {
+                "type": "uniform"
+            },
+            {
+                "type": "linear",
+                "alpha": hp.uniform("alpha", 0, 1)
+            },
+            {
+                "type": "geometric",
+                "gamma": hp.uniform("gamma", 0, 1)
+            }
+        ]),
+        "incremental": hp.choice("incremental", [True, False]),
+        "n_series": 2 + hp.randint("n_series", 30)
+    }
+])
+
+
 def impute(truths: List[Truth], config: Dict) -> List[Truth]:
     """
-    Impute the list of truths according to the config. The space of
-    config follows the following hyperopt config:
-
-    hp.choice("imputation_type", [
-        { "type": None },
-        {
-            "type": "diff",
-            "lookback": 1 + hp.randint("lookback", 33),
-            "normalize": hp.choice("normalize", [True, False]),
-            "window": hp.choice("window", [
-                {
-                    "type": "uniform"
-                },
-                {
-                    "type": "linear",
-                    "alpha": hp.uniform("alpha", 0, 1)
-                },
-                {
-                    "type": "geometric",
-                    "gamma": hp.uniform("gamma", 0, 1)
-                }
-            ]),
-            "incremental": hp.choice("incremental", [True, False]),
-            "n_series": 2 + hp.randint("n_series", 30)
-        }
-    ])
+    Impute the list of truths according to the config
     """
 
     if (len(truths) < 2) or (config["type"] is None):
