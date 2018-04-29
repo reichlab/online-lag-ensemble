@@ -18,6 +18,7 @@ def _predictor(truths: List[Truth], preds: List[Prediction], loss_fn, fill_fn,
 
     # Extract init_weights from update_fn
     init_weights = signature(update_fn).parameters["init_weights"].default
+    weights_history = []
 
     for idx, ew in enumerate(epiweeks):
         if idx == 0:
@@ -28,9 +29,11 @@ def _predictor(truths: List[Truth], preds: List[Prediction], loss_fn, fill_fn,
             weights = update_fn(losses)
             weights = weights / weights.sum()
 
+        weights_history.append(weights)
+
         output.append(weighted_prediction([pred.loc[ew] for pred in preds], weights))
 
-    return xr.concat(output, dim="epiweek")
+    return xr.concat(output, dim="epiweek"), weights_history
 
 
 def make_predictor(loss_fn, merging_fn, update_fn, fill_fn=lambda x: x):
