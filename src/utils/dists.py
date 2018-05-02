@@ -73,5 +73,5 @@ def probabilities(pred: Prediction, truth: Truth, multibin=False) -> xr.DataArra
     Return probabilities for the prediction.
     """
 
-    one_hot = actual_to_one_hot(truth, pred.pattrs["target"], multibin=multibin)
+    one_hot = actual_to_one_hot(truth, pred.attrs["target"], multibin=multibin)
     return np.multiply(one_hot, pred).sum(axis=1)
