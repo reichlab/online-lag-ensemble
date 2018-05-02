@@ -19,7 +19,7 @@ BINS = {
 }
 
 
-def actual_to_one_hot(vector: np.ndarray, target: str) -> np.ndarray:
+def actual_to_one_hot(vector: np.ndarray, target: str, multibin=False) -> np.ndarray:
     """
     Actual values to one hot encoded bins
     """
@@ -30,8 +30,28 @@ def actual_to_one_hot(vector: np.ndarray, target: str) -> np.ndarray:
 
     indices = np.digitize(vector, bins, right=False) - 1
 
+    expand = np.zeros_like(vector, dtype=int)
+    if multibin:
+        if target in ["onset-wk", "peak-wk"]:
+            # Week bins. We expand 1 neighbour on each side
+            expand[:] = 1
+            if target == "onset-wk":
+                # Don't expand the last bin (index = 34) which signifies 'none'
+                # onset
+                expand[indices == 34] = 0
+        else:
+            # These are percent bins, we expand 5 neighbours on the sides
+            expand[:] = 5
+
     for i in range(vector.shape[0]):
-        y[i, indices[i]] = 1
+        # Expand indices
+        expanded_indices = []
+        for e in range(-expand[i], expand[i] + 1):
+            idx = indices[i] + e
+            if idx >= 0 and idx < len(bins):
+                expanded_indices.append(idx)
+
+        y[i, expanded_indices] = 1
 
     return y
 
@@ -48,9 +68,10 @@ def weighted_prediction(preds: List[Prediction], weights: Weight) -> Prediction:
     return merged
 
 
-def probabilities(pred: Prediction, truth: Truth) -> xr.DataArray:
+def probabilities(pred: Prediction, truth: Truth, multibin=False) -> xr.DataArray:
     """
-    Return probabilities for the prediction
+    Return probabilities for the prediction.
     """
 
-    return np.multiply(actual_to_one_hot(truth, pred.attrs["target"]), pred).sum(axis=1)
+    one_hot = actual_to_one_hot(truth, pred.pattrs["target"], multibin=multibin)
+    return np.multiply(one_hot, pred).sum(axis=1)
