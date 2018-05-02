@@ -15,25 +15,25 @@ def _attrs_check(pred: Prediction, truth: Truth):
         raise Exception("Attributes don't match for prediction and truth")
 
 
-def ploss(pred: Prediction, truth: Truth) -> Loss:
+def ploss(pred: Prediction, truth: Truth, multibin=False) -> Loss:
     """
     Return loss as given by 1 - probability of true bin
     """
 
     _attrs_check(pred, truth)
-    loss = 1 - probabilities(pred, truth)
+    loss = 1 - probabilities(pred, truth, multibin=multibin)
     # Reattach metadata
     loss.attrs = { **pred.attrs, **truth.attrs }
     return loss
 
 
-def logloss(pred: Prediction, truth: Truth) -> Loss:
+def logloss(pred: Prediction, truth: Truth, multibin=False) -> Loss:
     """
     Return negative log of probability of true bin
     """
 
     _attrs_check(pred, truth)
-    loss = -np.log(probabilities(pred, truth) + EPSILON)
+    loss = -np.log(probabilities(pred, truth, multibin=multibin) + EPSILON)
     loss.attrs = { **pred.attrs, **truth.attrs }
     return loss
 
