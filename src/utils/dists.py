@@ -30,28 +30,22 @@ def actual_to_one_hot(vector: np.ndarray, target: str, multibin=False) -> np.nda
 
     indices = np.digitize(vector, bins, right=False) - 1
 
-    expand = np.zeros_like(vector, dtype=int)
     if multibin:
         if target in ["onset-wk", "peak-wk"]:
             # Week bins. We expand 1 neighbour on each side
-            expand[:] = 1
-            if target == "onset-wk":
-                # Don't expand the last bin (index = 34) which signifies 'none'
-                # onset
-                expand[indices == 34] = 0
+            expand = 1
         else:
-            # These are percent bins, we expand 5 neighbours on the sides
-            expand[:] = 5
+            expand = 5
 
-    for i in range(vector.shape[0]):
-        # Expand indices
-        expanded_indices = []
-        for e in range(-expand[i], expand[i] + 1):
-            idx = indices[i] + e
-            if idx >= 0 and idx < len(bins):
-                expanded_indices.append(idx)
+        for e in range(-expand, expand + 1):
+            print(indices + e)
+            y[np.arange(y.shape[0]), np.clip(indices + e, 0, len(bins) - 1)] = 1
 
-        y[i, expanded_indices] = 1
+        if target == "onset-wk":
+            # Reset expansion for the last 'none' bin
+            y[indices == 34, -2] = 0
+    else:
+        y[np.arange(y.shape[0]), indices] = 1
 
     return y
 
