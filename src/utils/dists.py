@@ -38,7 +38,6 @@ def actual_to_one_hot(vector: np.ndarray, target: str, multibin=False) -> np.nda
             expand = 5
 
         for e in range(-expand, expand + 1):
-            print(indices + e)
             y[np.arange(y.shape[0]), np.clip(indices + e, 0, len(bins) - 1)] = 1
 
         if target == "onset-wk":
