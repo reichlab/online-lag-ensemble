@@ -2,10 +2,8 @@
 # Use source to run
 
 function run_notebook
-  set -l script (echo $argv[1] | sed "s/\.ipynb/.py/")
-
-  rm -f $script
-  jupyter nbconvert --to script $argv[1]
+  set -l script (mktemp -u -p ./)
+  jupyter nbconvert --stdout --to script $argv[1] > $script
 
   sed -i "/get_ipython()/d" $script
 
